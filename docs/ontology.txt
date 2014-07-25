@@ -1,0 +1,68 @@
+spekker: (2d)3d camera view of workspace
+
+
+spek ontology
+-------------
+
+hok: collection of subhoks and razas and marks and bods and gaps with 1 or more joints to connect to other hoks
+
+raza: plane collecting marks on which they can relate to each other and prams
+
+mark: point, line or arc collected by 1 or more razas
+
+bod: positive envelope of mechanical part defined by flaating a series of razas
+
+gap: area within a bod with distinct properties (ie a solid support, conductive, a hole) defined by scooping a series of razas
+
+pram: constraint, relation or parameter affecting marks on a raza
+
+joint: interface that geometry external to hok can relate to
+
+mod: hok elevated to a type with instances
+
+foal: instance of a mod, can have custom local properties that override global mod 
+
+
+spek indices
+------------
+
+> data panes index these sets of values
+
+* hoks
+  + (foreach hok)
+    ? bod
+    - gaps
+    - subhoks
+    - razas
+      . marks
+    - prams
+    - joints
+  + (foreach mod)
+    - foals
+
+* prams
+
+* bods
+  + flaats
+  + gaps
+    - scoops
+    
+    
+marks
+-----
+
+> can be shared between razas
+
+* point
+* seg
+* arc
+* loop
+
+
+prams
+-----
+
+* distance
+* parallel
+* tangent
+* perpendicular
