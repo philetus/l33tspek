@@ -1,139 +1,173 @@
-// geometry for l33tspek
+// 2d hok geometry model
 
 package fig
 
 import (
 	//"fmt"
 	//"reflect"
+	"github.com/philetus/l33tspek/klv"
 )
 
-// unique name for tracking instances
-type Sig uint
-
-func makeKrystr(nxt uint) func() Sig {
-       return func() Sig {
-               sig := Sig(nxt)
-               nxt++
-               return sig
-       }
-}
-
-// implements flake interface
-type Ting struct {
-	sig Sig
-}
-func (self *Ting) Kryst() {
-       self.sig = krystr() // use closure to gen unique id
-}
-
-// every ting is a special snowflake with a unique sig ;)
-type Flake interface {
-	Sig() Sig
-}
-func (self *Ting) Sig() Sig {
-	return self.sig
-}
-
-type Ava struct {
-	sigs []Sig
-}
-// sig
-func (self *Ava) Peek() (sg Sig, last bool) {
-	switch len(self.sigs) {
-	case 0: // wtf?
-		sg, last = nil, true
-	case 1: // this is sig of geometry
-		sg = self.sigs[0]
-		last = true
-	default: // this is sig of containing hok
-		sg = self.sigs[0]
-		last = false
-	}
-}
-// returns new ava without the top sig to pass to hok kid
-func (self *Ava) Spawn() Ava {
-	return Ava{self.sigs[1:]}
-}
-
-// represents bezier curve for eezl
-type Bez struct {
-	Coords [2]Vek
-	Gids [2]Vek
-}
-
-// position in 2d plane; implements spot
-type Pin struct {
-	Ting
-	coords Vek
-}
-
-// edge between two pins
-type Ra struct {
-	Ting
-	ends [2]PinTr
-}
-
-
-// a (possibly closed) path across a series of ras sharing pins
-type Flit struct {
-	Ting
-	edges []RaTr
-}
-
+//
+// *** fig implements hok for 2d geometry models
+//
 type Fig struct {
-	Ting
-	marks map[Sig]Ting
+	S klv.Sig
+	A klv.Hok
+	kids map[klv.Sig]klv.Hok
+	deks map[klv.Sig]klv.Nuk
 }
-func (self *Fig) Mark(tng Ting) {
-	self.marks[tng.Sig()] = tng
+func (self Fig) Sig() klv.Sig {
+	return self.S
 }
-func (self *Fig) Dox(av Ava) (tng Ting, ok bool) {
-	sigs = av.Sigs()
-	if len(sigs) == 1 {
-		tng, ok = self.marks[sigs[0]]
-		return
-	} 
-	tng, ok = self.marks[sigs[0]]
-	if ok {
-		hk = Hok(tng)
-		tng, ok = hk.Dox(Tar{sigs=sigs[1:]})
+func (self Fig) Ark() klv.Hok {
+	return self.A
+}
+func (self Fig) HasKids() bool {
+	return self.kids != nil
+}
+func (self Fig) Kid(sig klv.Sig) (kid klv.Hok, has bool) {
+	if !self.HasKids() {
+		return nil, false
 	}
+	kid, has = self.Kids[sig]
+	return
+}
+func (self Fig) Jnt(kid klv.Hok) klv.Hok {
+	if !self.HasKids() {
+		self.kids = make(map[klv.Sig]klv.Hok)
+	}
+	self.kids[kid.Sig()] = kid
+	return kid
+}
+func (self Fig) Nuk(sig Sig) (nuk Nuk, has bool) {
+	if !self.HasNuks() {
+		return nil, false
+	}
+	nuk, has = self.deks[sig]
+	return
+}
+func (self Fig) Swlo(nuk Nuk) X {
+	if !self.HasNuks() {
+		self.deks = make(map[klv.Sig]klv.Nuk)
+	}
+	sig := nuk.Sig()
+	self.deks[sig] = nuk
+	return klv.Xd{S: sig}
 }
 
-type Hok struct {
-	Fig
-	rent Fig
-	palmps map[Sig]Sig
-	joint Warp
+// ****************
+// *** fig nuks
+// ****************
+
+// *** skalr
+type Skalr struct {
+	S klv.Sig
+	N klv.Nal // float64 value
 }
-func (self *Hok) Palmp(trgt Sig, tng Ting) {
-	self.marks[tng.Sig()] = tng
-	self.palmps[trgt Sig] = tng.Sig()
+func (self Skalr) Sig() klv.Sig {
+	return self.S
 }
-func (self *Hok) Dox(av Ava) (tng Ting, ok bool) {
-	sigs = av.Sigs()
-	// check if ava is palmpd
-	if len(sigs) == 1 {
-		tng, ok = self.palmps[sigs[0]]
-		if ok {
-			tng, ok = self.marks[sigs[0]]
-			return
-		} 
-	} else {
-		tng, ok = self.palmps[sigs[0]]
-		if ok {
-			tng, ok = self.marks[sigs[0]]
-			if ok {
-				hk = Hok(tng)
-				tng, ok = hk.Dox(Tar{sigs=sigs[1:]})
-				return
-			}
-		}
-	}
-		tng, ok = self.marks[sigs[0]]
-		if ok {
-			hok = Hok(tng)
-			tng, ok = hok.Dox(Tar{sigs=sigs[1:]})
-		}
-	}
+func (self Skalr) Nal() (klv.Nal, bool) {
+	return self.N, true
 }
+
+// *** neg - negates kid value
+type Neg struct {
+	klv.Guk // provides nal func
+	S klv.Sig
+	Valu klv.X // value
+}
+func (self Neg) Sig() klv.Sig {
+	return self.S
+}
+
+// *** vek
+type Vek struct {
+	klv.Guk // provides nal func
+	S klv.Sig
+	V klv.X
+	U klv.X
+}
+func (self Vek) Sig() klv.Sig {
+	return self.S
+}
+
+// *** warps
+type LatWarp struct {
+	klv.Guk // provides nal func
+	S klv.Sig
+	Dlta klv.X // delta vector
+}
+func (self LatWarp) Sig() klv.Sig {
+	return self.S
+}
+type FlktWarp struct {
+	klv.Guk // provides nal func
+	S klv.Sig
+	Sym klv.X // line of symmetry 
+}
+func (self FlktWarp) Sig() klv.Sig {
+	return self.S
+}
+type RotWarp struct {
+	klv.Guk // provides nal func
+	S klv.Sig
+	Hdng klv.X // heading to rotate by
+}
+func (self RotWarp) Sig() klv.Sig {
+	return self.S
+}
+type CmboWarp struct {
+	klv.Guk // provides nal func
+	S klv.Sig
+	A klv.X
+	B klv.X
+}
+func (self Vek) Sig() klv.Sig {
+	return self.S
+}
+
+// *** pin
+type Pin struct {
+	klv.Guk // provides nal func
+	S klv.Sig
+	At klv.X // pin position
+}
+func (self Pin) Sig() klv.Sig {
+	return self.S
+}
+
+// *** ra
+type Ra struct {
+	klv.Guk // provides nal func
+	S klv.Sig
+	A klv.X // first pin
+	B klv.X // second pin
+}
+func (self Ra) Sig() klv.Sig {
+	return self.S
+}
+
+// *** Yok
+type Yok struct {
+	klv.Guk // provides nal func
+	S klv.Sig
+	A klv.X // first ra
+	B klv.X // second ra
+	Van klv.X // vane vek
+}
+func (self Yok) Sig() klv.Sig {
+	return self.S
+}
+
+// *** flit
+type Flit struct {
+	klv.Guk // provides nal func
+	S klv.Sig
+	Yoks []X
+}
+func (self Flit) Sig() klv.Sig {
+	return self.S
+}
+
