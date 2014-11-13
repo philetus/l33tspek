@@ -147,7 +147,7 @@ func Mult(a, b Vek) Vek {
 }
 
 // multiply vek by warp and return result as new vek
-func Mog(v Vek, w Warp) Vek {
+func Mog(w Warp, v Vek) Vek {
 	return Vek{
 		v[0]*w[0][0] + v[1]*w[1][0] + w[2][0],
 		v[0]*w[0][1] + v[1]*w[1][1] + w[2][1],

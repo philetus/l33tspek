@@ -7,7 +7,7 @@ import (
 	"github.com/philetus/l33tspek/fig"
 )
 
-func butterfly() bfg *fig.Fig {
+func butterfly() *fig.Fig {
 
     // build left profile of butterfly as fig
     lp := fig.Fig{S: "lp"}
@@ -136,7 +136,7 @@ func butterfly() bfg *fig.Fig {
     	Van: klv.Xd{"vDown"},
     })
     
-    // flit
+    // wings flit
     b.Swlo(fig.Flit{
     	S: "fWings",
     	Yoks: []X{
@@ -209,10 +209,10 @@ func main() {
 				// build butterfly
 				bf := butterfly()
 				
-				// klap fig into global veks in list of bezs
+				// klap wing flit of fig into global veks in list of bezs
 				bzs := bf.Bezize("fWings")
 				
-				// draw bezs to eezl
+				// draw wing bezs to eezl
 				gel.Jmto(bzs[0].Coords[0][0], bzs[0].Coords[0][1])
 				for _, bz := range bzs {
 					gel.Beto(bz.Coords[1][0], bz.Coords[1][1],

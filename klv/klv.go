@@ -11,6 +11,7 @@ import (
 )
 
 type Sig string
+type Xsig []Sig
 type Nal float64
 
 type Nuk interface {
@@ -37,18 +38,23 @@ type Hok interface {
 }
 
 // retrieves nuk from hok tree at given root by x address
-func Dox(hk Hok, x X) (nk Nuk, ok bool) {
+func Dox(hk Hok, x X) (nk Nuk, ss Xsig, ok bool) {
+	sg := x.Sig()
 
 	// if x is leaf try to return nuk by x.sig
 	if x.IsLef() {
-		if nk, ok = hk.Nuk(x.Sig()); ok {
+		if nk, ok = hk.Nuk(sg); ok {
+			ss = Xsig{sg}
 			return
 		}
 	
 	// otherwise if x is not lef try to recurse on kid hok
 	} else {
-		if kid, has := hk.Kid(x.Sig()); has {
-			return Dox(kid, x.Kid())
+		if kid, has := hk.Kid(sg); has {
+			if nk, ss, ok = Dox(kid, x.Kid()); ok {
+				ss = append(ss, sg)
+			}
+			return
 		}
 	}
 	
@@ -58,7 +64,7 @@ func Dox(hk Hok, x X) (nk Nuk, ok bool) {
 	}
 	
 	// otherwise fail
-	return nil, false
+	return nil, nil, false
 }
 
 // x is lookup address of nuk
