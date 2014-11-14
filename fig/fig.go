@@ -41,14 +41,14 @@ func (self Fig) Jnt(kid klv.Hok) klv.Hok {
 	self.kids[kid.Sig()] = kid
 	return kid
 }
-func (self Fig) Nuk(sig Sig) (nuk Nuk, has bool) {
+func (self Fig) Nuk(sig klv.Sig) (nuk klv.Nuk, has bool) {
 	if !self.HasNuks() {
 		return nil, false
 	}
 	nuk, has = self.deks[sig]
 	return
 }
-func (self Fig) Swlo(nuk Nuk) X {
+func (self Fig) Swlo(nuk klv.Nuk) klv.X {
 	if !self.HasNuks() {
 		self.deks = make(map[klv.Sig]klv.Nuk)
 	}
@@ -133,7 +133,7 @@ type CmboWarp struct {
 	A klv.X
 	B klv.X
 }
-func (self Vek) Sig() klv.Sig {
+func (self CmboWarp) Sig() klv.Sig {
 	return self.S
 }
 
@@ -174,7 +174,7 @@ func (self Yok) Sig() klv.Sig {
 type Flit struct {
 	klv.Guk // provides nal func
 	S klv.Sig
-	Yoks []X
+	Yoks []klv.X
 }
 func (self Flit) Sig() klv.Sig {
 	return self.S

@@ -11,7 +11,10 @@ import (
 )
 
 type Sig string
-type Xsig []Sig
+type XSig []Sig
+func (self XSig) SpliceKid(kid XSig) XSig {
+	return append(self[:len(self) - 1], kid)
+}
 type Nal float64
 
 type Nuk interface {
@@ -38,13 +41,13 @@ type Hok interface {
 }
 
 // retrieves nuk from hok tree at given root by x address
-func Dox(hk Hok, x X) (nk Nuk, ss Xsig, ok bool) {
+func Dox(hk Hok, x X) (nk Nuk, xs XSig, ok bool) {
 	sg := x.Sig()
 
 	// if x is leaf try to return nuk by x.sig
 	if x.IsLef() {
 		if nk, ok = hk.Nuk(sg); ok {
-			ss = Xsig{sg}
+			xs = Xsig{sg}
 			return
 		}
 	
@@ -52,14 +55,14 @@ func Dox(hk Hok, x X) (nk Nuk, ss Xsig, ok bool) {
 	} else {
 		if kid, has := hk.Kid(sg); has {
 			if nk, ss, ok = Dox(kid, x.Kid()); ok {
-				ss = append(ss, sg)
+				xs = append(ss, sg)
 			}
 			return
 		}
 	}
 	
 	// otherwise try to dox with ark
-	if ark := self.Ark(); ark != nil {
+	if ark := hk.Ark(); ark != nil {
 		return Dox(ark, x)
 	}
 	

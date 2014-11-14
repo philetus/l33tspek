@@ -4,8 +4,9 @@ package fig
 
 import (
 	"fmt"
+	"reflect"
 	"github.com/philetus/l33tspek/klv"
-	"github.com/philetus/l33tspek/flat
+	"github.com/philetus/l33tspek/flat"
 )
 
 type Bez struct {
@@ -13,21 +14,43 @@ type Bez struct {
 	Vans [2]flat.Vek
 }
 
-type bezSkaf struct {
-	yok Yok
-	yokSs klv.Xsig
+// scaffold structs to support parsing bez from fig tree
+type skfYok struct {
+	nuk Yok
+	xs klv.XSig
+	ras []skfRa
+	van skfVan
+}
 
-	ras []Ra
-	raSss []klv.Xsig
+type skfRa struct {
+	nuk Ra
+	xs klv.XSig
+	pins []skfPin
+}
+func (self skfRa) isEqual(other skfRa) bool {
+	return reflect.DeepEqual(self.xs, other.xs)
+}
 
-	pins []Pin
-	pinSss []klv.Xsig
+type skfPin struct {
+	nuk Pin
+	xs klv.XSig
+	vek skfVek
+}
+func (self skfPin) isEqual(other skfPin) bool {
+	return reflect.DeepEqual(self.xs, other.xs)
+}
 
-	vekSss []klv.Xsig
+type skfVek struct {
+	nuk Vek
+	xs klv.XSig
+	lok flat.Vek // flat vek as collapsed locally
+	glob flat.Vek // flat vek transformed by fig warp tree
+}
 
-	vanSS klv.Xsig
-
-	bz Bez
+type skfVan struct {
+	lok flat.Vek // flat vek as collapsed locally
+	now flat.Vek // adjusted for first van of this bez
+	pre flat.Vek // adjusted for last van of previous bez
 }
 
 type warpNod struct {
@@ -36,218 +59,228 @@ type warpNod struct {
 	warp flat.Warp
 }
 
-func (self Fig) Bezize(flit klv.Sig) bzs []Bez {
-
-	// get flit by sig or fail
-	var f Flit	
-	if nuk, has := self.deks[flit]; has {
-		if tst, ok := nuk.(Flit); ok {
-			f = tst
-		} else {
-			return nil
-		}
-	} else {
-		return nil
+func (self Fig) Bezize(flitSig klv.Sig) (bzs []Bez) {
+	flit, ok := self.getFlit(flitSig); !ok {
+		panic("couldnt find flit for sig: %v", flitSig)
 	}
 	
-	// build slice of yoks and equal sized slice of blank bezs to return
+	// build scaffold tree from fig tree to hold data
 	// (if flit isnt a loop there is extra bez to be removed at end)
-	skafs := self.klapSkafs(f.Yoks)
+	yoks := self.klapYoks(flit.Yoks)
 	
-	// loop over skafs and order ras
-	lstRa := skafs[0].ras[0]
-	lstRaSss := skafs[0].raSss[0]
-	nxtRa := skafs[0].ras[1]
-	nxtRaSss := skafs[0].raSss[1]
+	// flop ras and pins within each yok to run sequentially
+	orderYoks(yoks)
 	
+	// warp veks thru fig tree
+	warpRut := warpNod{
+		kids: make(map[klv.Sig]warpNod),
+		warp: self.klapJoint()}
+	
+	// loop over veks and mog with warp tree
+	for _, yok := range yoks {	
+		for _, ra := range yok.ras {
+			for _, pin := range ra.pins {
+				vek = pin.vek
+				
+				// descend warp tree for each vek and mog
+				wrp := self.klapWarpTree(warpRut, vek.xs)
+				vek.glob = flat.Mog(wrp, vek.lok)
+	}
+	
+	// build slice of bezs from skaf yoks and return
+	for _, yok := range yoks {
+		bzs = append(bzs, bz)	
+	}
+	return
+}
+
+func orderYoks(yoks []skfYok) bool {
+	
+	// make sure there are at least two yoks
+	if len(yoks) < 2 {
+		panic(fmt.Sprintf("not enough yoks for a bez!"))
+	}
+	
+	// make sure that second ra of first yok is also in second yok
+	fY, sY = yoks[0], yoks[1]
 	switch {
-	case nxtRaSss == skafs[1].raSss[0]: // order is ok already
-	case nxtRaSss == skafs[1].raSss[1]:
-	case lstRaSss == skafs[1].raSss[0]: fallthrough;// flop nxt & lst
-	case lstRaSss == skafs[1].raSss[1]: 
-		lstRas, lstRaSss = nxtRas, nxtRaSss
-		nxtRas, nxtRaSss = skafs[1].ras[0], skafs[1].raSss[0]
+	case fY.ras[1].isEqual(sY.ras[0]): // order is ok already
+	case fY.ras[1].isEqual(sY.ras[1]): // order of fY is ok
+	case fY.ras[0].isEqual(sY.ras[0]): fallthrough; // flop fY ras
+	case fY.ras[0].isEqual(sY.ras[1]): // flop fY ras
+		fY.ras[0], fY.ras[1] = fY.ras[1], fY.ras[0]
 	default:
 		panic(fmt.Sprintf("first and second yoks not connected!"))		
 	}
 	
-	for i, skf := range skafs {
+	// loop over yoks and order ras and pins
+	lstRa := yoks[0].ras[1]
+	for i, yok := range yoks {
+	
+		// flop yok ras so first ra of this yok is same as second of pre yok
+		if i > 0 {
+			switch {
+			case lstRa.isEqual(yok.ras[0]): // order ok
+			case lstRa.isEqual(yok.ras[1]): // flip skf ras
+				yok.ras[0], yok.ras[1] = yok.ras[1], yok.ras[0]
+			default:
+				panic(fmt.Sprintf("yok %d not connected to yok %d!", i - 1, i))
+			}
+			lstRa = yok.ras[1] // set next lst ra
+		}
+		
+		// flop pins so second pin of first ra is also first pin of second ra
+		fR, sR = yok.ra[0], yok.ra[1]
 		switch {
-		case nxtRaSs == skf.raSss[0]: // order ok, set nxt ra
-			nxtRa, nxtRaSs = skf.ras[1], skf.raSss[1]
-		case nxtRaSs == skf.raSss[1]: // flip skf ras then set nxt ra
-			skf.ras[1], skf.raSss[1] = skf.ras[0], skf.raSss[0]
-			skf.ras[0], skf.raSss[0] = nxtRa, nxtRaSs
-			nxtRa, nxtRaSs = skf.ras[1], skf.raSss[1]
+		case fR.pin[1].isEqual(sR.pin[0]): // order ok
+		case fR.pin[1].isEqual(sR.pin[1]): // flop sR
+			sR.pin[0], sR.pin[1] = sR.pin[1], sR.pin[0]
+		case fR.pin[0].isEqual(sR.pin[0]): // flop fR
+			fR.pin[0], fR.pin[1] = fR.pin[1], fR.pin[0]
+		case fR.pin[0].isEqual(sR.pin[1]): // flop both
+			fR.pin[0], fR.pin[1] = fR.pin[1], fR.pin[0]
+			sR.pin[0], sR.pin[1] = sR.pin[1], sR.pin[0]
 		default:
-			panic(fmt.Sprintf("yok %d not connected to yok %d!", i - 1, i))
-		}
-		
-		// dox pins then pick the right two
-		if pins, pinSss, ok := self.klapPins(skf.ras); ok {
-			skf.pins, skf.pinSss = pins, pinSss
-		} else {
-			panic(fmt.Sprintf("klap pins fail at yok %d!", i))
-		}
-		
-		// klap flat veks from pins
-		for j := 0; j < 2; j++ {
-			if skf.bz.Coords[j], skf.vekSss[j], ok := 
-				self.KlapVek(skf.pins[j].At); !ok {
-				panic(fmt.Sprintf("klap pins fail at yok %d, pin %d!", i, j))
-			}
-		}
-		
-		// klap flat veks from vans
-		if skf.vanVeks, ok := self.klapVan(skf.yok.Van); !ok {
-			 panic(fmt.Sprintf("klap vans fail at yok %d!", i))
+			panic(fmt.Sprintf("ras not connected in yok %d!", i))
 		}
 	}
-	
-	// warp veks thru fig tree
-	warpRt := warpNod{
-		kids: make(map[klv.Sig]warpNod),
-		warp: self.klapJoint()}
-	
-	// loop over coord veks and mog with warp tree
-	for i, skf := range skafs {
-	
-		// descend warp tree for each coord vek and mog
-		for j := 0; j < 2; j++ {
-			wrp := self.klapWarpTree(warpRt, skf.VekSss[j])
-			skf.bz.Coords[j] = flat.Mog(wrp, skf.bz.Coords[j])
-		}
-		
-		// add coords[0] to vanVeks[1]
-		skf.bz.Vans[0] = flat.Add(skf.vanVeks[1], skf.bz.Coords[0])
-		if i != 0 {
-			preSkf = skafs[i - 1]
-			preSkf.bz.Vans[1] = flat.Add(skf.vanVeks[0], preSkf.bz.Coords[0])
-		}
-	}
-	lstSkf = skafs[len(skaf) - 1]
-	lstSkf.bz.Vans[1] = flat.Add(skafs[0].vanVeks[0], lstSkf.bz.Vans[1])
-	
-	// build slice of bezs from skafs and return
-	for _, skf := range skafs {
-		bzs = append(bzs, skf.bz)	
-	}
-	return
+	return true
 }
 
-func (self Fig) klapWarpTree(warpNow warpNod, ss klv.Xsig) flat.Warp {
-	
-	figNow := self // current fig
-	
-	for i := 0; i < len(ss) - 1; i++ {
-		sg := ss[i]
-		var has bool
-		figNow, has = figNow.kids[sg]
-		if !has {
-			panic(fmt.Sprint("couldnt find kid fig at sig: %v", sg))
+func (self Fig) getKid(xs XSig) (kid Fig, ok bool) {
+	kid = self
+	for i := 0; i < len(xs) - 1; i++ {
+		if kid, ok = kid.kids[xs[i]]; !ok {
+			return
 		}
-		var warpNxt	warpNow
-		if warpNxt, has = warpNow.kids[sg]; !has {
-			warpNxt = warpNod{
-				sig: sg, 
-				kids: make(map[klv.Sig]warpNod),
-				warp: flat.CmboWarp(warpNow.warp, figKid.klapJoint()),
-			}
-			warpNow.kids[sg] = warpNxt
-		}
-		warpNow = warpNxt
-	}		
-	return warpNow.warp
-}
-
-func (self Fig) klapSkafs(yokXs []X) (skafs []bezSkaf) {
-	for _, x := range yokXs {
-		skf := bezSkaf{}
-		skafs = (append(skafs, skf))
-		if nuk, ss, ok := klv.Dox(self, x); ok {
-			if yok, ok := nuk.(Yok); ok {
-				skf.yok, skf.yokSs = yok, ss
-				
-				// dox ras
-				for i, raX := range []X{skf.yok.A, skf.Yok.B} {
-					if rNk, rSs, ok := klv.Dox(self, raX); ok {
-						if ra, ok := rNk.(Ra); ok {
-							skf.ras[i], skf.raSss[i] = ra, rSs
-						}
-					}	
-				}
-			}
-		}
-	}
-	return
-}
-
-func (self Fig) klapVan(vekX X) (vanVeks []flat.Vek) {
-	vanVek, _, ok := klapVek(vekX); 
-	if !ok {
-		panic(fmt.Sprintf("couldnt find van at x: %v", vekX))
-	}
-	
-	// rotate vans pos/neg 1/4 turn
-	vanVeks = append(
-		vanVeks, 
-		flat.Mog(flat.RotWarp(flat.Vek{0.0, 1.0}), vanVek))
-	vanVeks = append(
-		vanVeks, 
-		flat.Mog(flat.RotWarp(flat.Vek{0.0, -1.0}), vanVek))
-	return
-}
-
-func (self Fig) klapPins(ras [2]Ra) (pins []Pin, pinSss []klv.Xsig, ok bool) {
-	pns = [2][2]Pin
-	pnSss = [2][2]klv.Xsig
-	for i := 0; i < 2; i++ {
-		for j, pnX := range []X{ras[i].A, ras[i].B} {
-			if nuk, ss, okk := klv.Dox(self, pnX); okk {
-				if pn, okk := nuk.(Pin); okk {
-					pns[i][j], pnSss[i][j] = pn, ss
-				}
-			}
-		}
-	}
-	switch {
-	case pnSss[0][0] == pnSss[1][0]: fallthrough; // order ok
-	case pnSss[0][1] == pnSss[1][0]:
-		for j := 0; j < 2; j++ {
-			pins = append(pins, pns[1][j])
-			pinSss = append(pinSss, pinSss[1][j])
-		}
-	case pnSss[0][0] == pnSss[1][1]: fallthrough; // flop (pins[1])
-	case pnSss[0][1] == pnSss[1][0]:
-		for j := 0; j < 2; j++ {
-			pins = append(pins, pns[1][1 - j])
-			pinSss = append(pinSss, pnSss[1][1 - j])
-		}
-	default:
-		ok = false
-		return
 	}
 	ok = true
 	return
 }
 
-func (self Fig) klapVek(vekX X) (fltVk flat.Vek, vkSs klv.Xsig, ok bool) {
-	if nuk, ss, okk := klv.Dox(self, vekX); okk {
-		if vek, okk := nuk.(Vek); okk {
-			fltVk = flat.Vek{}
-			vkSs = ss
-			for k, sklrX := range []X{vek.V, vek.U} {	
-				if nuk, ss, ok := klv.Dox(self, sklrX); ok {
-					if sklr, ok := nuk.(Skalr); ok {
-						fltVk[k] = sklr.N
+func (self Fig) getFlit(sig klv.X) (Flit, bool) {
+	if nuk, has := self.deks[sig]; has {
+		if f, ok := nuk.(Flit); ok {
+			return f, true
+		}
+	}
+	return nil, false
+}
+
+// build slice of yok scaffolds from yok xs to hold data for each yoks bez
+func (self Fig) klapYoks(yokXs []klv.X) (yoks []skfYok) {
+	for _, x := range yokXs {
+		yok := skfYok{}
+		yoks = append(yoks, skf)
+		
+		// dox yok
+		if nuk, xs, ok := klv.Dox(self, x); ok {
+			if yk, ok := nuk.(Yok); ok {
+				yok.nuk = yk
+				yok.xs = xs
+				
+				// klap ras from yok
+				if ras, ok := self.klapRas(yok); ok {
+					yok.ras = ras
+				}
+				
+				// klap van from yok
+				if van, ok := self.klapVan(yok); ok {
+					yok.van = van
+				}
+			}
+		}
+	}
+	return
+}
+
+func (self Fig) klapRas(yok skfYok) (ras []skfRa, ok bool) {
+	// get parent fig of yok
+	if rent, okk := self.getKid(yok.xs); okk {
+		for i, x := range []klv.X{yok.nuk.A, yok.nuk.B} {
+			if nuk, xs, okk := klv.Dox(rent, x) {
+				if r, okk := nuk.(Ra); okk {
+					ra = skfRa{nuk: ra, xs: yok.xs.SpliceKid(xs)}
+					if pins, okk := self.klapPins(ra); okk {
+						ra.pins = pins
+						ras = append(ras, ra)
 					}
 				}
 			}
-			ok = true
-			return
 		}
 	}
-	return nil, nil, false
+	ok = len(ras) == 2
+	return
+}
+
+func (self Fig) klapVan(yok skfYok) (van skfVan, ok bool) {
+	if rent, okk := self.getKid(yok.xs); okk {
+		if lok, okk := rent.klapFltVk(yok.nuk.Van)
+			van.lok = lok
+			ok = true
+		}
+	}
+	return
+}
+
+func (self Fig) klapPins(ra skfRa) (pins []skfPin, ok bool) {
+	if rent, okk := self.getKid(ra.xs); okk {
+		for _, x := range []klv.X{ra.nuk.A, ra.nuk.B} {
+			if nuk, xs, okk := klv.Dox(rent, x); okk {
+				if pn, okk := nuk.(Pin); okk {
+					pin := skfPin{}
+					pin.nuk = pn
+					pin.xs = ra.xs.SpliceKid(xs)
+					if vek, okk := self.klapVek(pin); okk {
+						pin.vek = vek
+						pins = append(pins, pin)
+					}
+				}
+			}
+		}
+	}
+	ok = len(pins) == 2
+	return
+}
+		
+func (self Fig) klapVek(pin skfPin) (vek skfVek, ok bool) {
+	if rent, okk := self.getKid(pin.xs); okk {
+		if nuk, xs, okk := klv.Dox(rent, pin.nuk.At); okk {
+			if vk, okk := nuk.(Vek); okk {
+				vek.nuk = vk
+				vek.xs = pin.xs.SpliceKid(xs)
+				
+				// klap local flat vek
+				if lok, okk := rent.klapFltVk(pin.nuk.At)
+					vek.lok = lok
+					ok = true
+				}
+			}
+		}
+	}
+	return
+}
+
+// klap flat vek from x address of vek
+func (self Fig) klapFltVk(x klv.X) (fltVk flat.Vek, ok bool) {
+	if nuk, xs, okk := klv.Dox(self, x); okk {
+		if vek, okk := nuk.(Vek); okk {
+			if rent, okk := self.getKid(xs); okk {
+				for i, sklrX := range []X{vek.V, vek.U} {	
+					if sNk, _, okk := klv.Dox(rent, sklrX); okk {
+						if sklr, okk := sNk.(Skalr); okk {
+							fltVk[i] = sklr.N
+							ok = true
+						} else {
+							ok = false
+							return
+						}
+					}
+				}
+			}
+		}
+	}
+	return
 }
 
 // klap flat warp from "Joint" address
@@ -258,7 +291,7 @@ func (self Fig) klapJoint() flat.Warp {
 	return flat.IandI
 }
 
-func (self Fig) klapWarp(self, x X) (flat.Warp, bool) {
+func (self Fig) klapWarp(x klv.X) (flat.Warp, bool) {
 	
 	// dox warp nuk
 	if wrp, _, ok := klv.Dox(self, x); ok {
@@ -292,5 +325,30 @@ func (self Fig) klapWarp(self, x X) (flat.Warp, bool) {
 		}
 	}
 	return nil, false // if didnt return already fail
+}
+
+func (self Fig) klapWarpTree(warpNow warpNod, xs klv.XSig) flat.Warp {
+	
+	figNow := self // current fig
+	
+	for i := 0; i < len(ss) - 1; i++ {
+		sg := xs[i]
+		var has bool
+		figNow, has = figNow.kids[sg]
+		if !has {
+			panic(fmt.Sprint("couldnt find kid fig at sig: %v", sg))
+		}
+		var warpNxt	warpNow
+		if warpNxt, has = warpNow.kids[sg]; !has {
+			warpNxt = warpNod{
+				sig: sg, 
+				kids: make(map[klv.Sig]warpNod),
+				warp: flat.CmboWarp(warpNow.warp, figKid.klapJoint()),
+			}
+			warpNow.kids[sg] = warpNxt
+		}
+		warpNow = warpNxt
+	}		
+	return warpNow.warp
 }
 
