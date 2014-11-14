@@ -16,6 +16,7 @@ type Fig struct {
 	A klv.Hok
 	kids map[klv.Sig]klv.Hok
 	deks map[klv.Sig]klv.Nuk
+	// deks["Joint"] --> Warp
 }
 func (self Fig) Sig() klv.Sig {
 	return self.S
@@ -113,9 +114,17 @@ func (self FlktWarp) Sig() klv.Sig {
 type RotWarp struct {
 	klv.Guk // provides nal func
 	S klv.Sig
-	Hdng klv.X // heading to rotate by
+	Hed klv.X // heading to rotate by
 }
 func (self RotWarp) Sig() klv.Sig {
+	return self.S
+}
+type SkalWarp struct {
+	klv.Guk // provides nal func
+	S klv.Sig
+	Skal klv.X // vek to scale by
+}
+func (self SkalWarp) Sig() klv.Sig {
 	return self.S
 }
 type CmboWarp struct {

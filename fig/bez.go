@@ -3,8 +3,7 @@
 package fig
 
 import (
-	//"fmt"
-	//"reflect"
+	"fmt"
 	"github.com/philetus/l33tspek/klv"
 	"github.com/philetus/l33tspek/flat
 )
@@ -186,7 +185,7 @@ func (self Fig) klapSkafs(yokXs []X) (skafs []bezSkaf) {
 func (self Fig) klapVan(vekX X) (vanVeks []flat.Vek) {
 	vanVek, _, ok := klapVek(vekX); 
 	if !ok {
-		panic(fmt.Sprint("couldnt find van at x: %v", vekX))
+		panic(fmt.Sprintf("couldnt find van at x: %v", vekX))
 	}
 	
 	// rotate vans pos/neg 1/4 turn
@@ -251,7 +250,47 @@ func (self Fig) klapVek(vekX X) (fltVk flat.Vek, vkSs klv.Xsig, ok bool) {
 	return nil, nil, false
 }
 
-func (self Fig) klapJoint() Warp {
+// klap flat warp from "Joint" address
+func (self Fig) klapJoint() flat.Warp {
+	if wrp, ok := self.klapWarp(klf.Xd{"Joint"}); ok {
+		return wrp
+	}
+	return flat.IandI
+}
 
+func (self Fig) klapWarp(self, x X) (flat.Warp, bool) {
+	
+	// dox warp nuk
+	if wrp, _, ok := klv.Dox(self, x); ok {
+ 
+	 	// use type switch to do the right thing
+		switch wrp := wrp.(type) {
+		case CmboWarp: // recurse and klap subwarps
+			if fltWrpA, okk := self.klapWarp(wrp.A); okk {
+				if fltWrpB, okl := self.klapWarp(wrp.B); okl {
+					return flat.CmboWarp(fltWrpA, fltWrpB), true
+				}
+			}
+		case LatWarp:
+			if dlta, _, okk := self.klapVek(wrp.Dlta); okk {
+				return flat.LatWarp(dlta), true
+			}
+		case RotWarp:
+			if hed, _, okk := self.klapVek(wrp.Hed); okk {
+				return flat.RotWarp(hed), true
+			}
+		case FlktWarp:
+			if sym, _, okk := self.klapVek(wrp.Sym); okk {
+				return flat.FlktWarp(sym), true
+			}
+		case SkalWarp:
+			if skal, _, okk := self.klapVek(wrp.Skal); okk {
+				return flat.SkalWarp(skal), true
+			}
+		default:
+			panic(fmt.Sprintf("unexpected type for fig joint: %v", wrp))
+		}
+	}
+	return nil, false // if didnt return already fail
 }
 

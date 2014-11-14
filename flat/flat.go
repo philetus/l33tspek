@@ -50,11 +50,11 @@ func LatWarp(dlta Vek) Warp {
 
 // generates a rotation matrix from a heading vector
 // if heading vector is zero magnitude returns identity matrix
-func RotWarp(hdng Vek) Warp {
-	if MagSkwr(hdng) == 0.0 {
+func RotWarp(hed Vek) Warp {
+	if MagSkwr(hed) == 0.0 {
 		return IandI
 	}
-	a := Hed(hdng)
+	a := Hed(hed)
 	sn, cs := math.Sin(a), math.Cos(a)
 	return Warp{
 		Wek{cs, sn, 0.0},
