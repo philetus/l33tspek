@@ -11,27 +11,15 @@ import (
 )
 
 type Sig string
-type XSig []Sig
-func (self XSig) SpliceKid(kid XSig) XSig {
-	return append(self[:len(self) - 1], kid...)
-}
-type Nal float64
 
 type Nuk interface {
 	Sig() Sig
-	Nal() (Nal, bool)
-}
-
-// mixin for non-nal nuks
-type Guk struct {}
-func (self Guk) Nal() (Nal, bool) {
-	return 0.0, false
 }
 
 // hoks hold nuks referenced by sig
 type Hok interface {
 	Sig() Sig  // unique for hoks in rent
-	Ark() Hok // archetype hok
+	Ark() (Hok, bool) // archetype hok
 	HasKids() bool
 	Kid(Sig) (Hok, bool)
 	Jnt(Hok) Hok // joint new kid hok into this one by sig
@@ -40,34 +28,31 @@ type Hok interface {
 	Swlo(Nuk) X // swallow new nuk by sig, returns address for rent nuk
 }
 
-// retrieves nuk from hok tree at given root by x address
-func Dox(hk Hok, x X) (nk Nuk, xs XSig, ok bool) {
-	sg := x.Sig()
+// retrieves sigs for rent and nuk from hok tree at given root by x address
+func Dox(hk Hok, x X) (rentSg Sig, nukSg Sig, ok bool) {
+	sg := 
 
-	// if x is leaf try to return nuk by x.sig
+	// if x is leaf check that sg is in nuks
 	if x.IsLef() {
-		if nk, ok = hk.Nuk(sg); ok {
-			xs = XSig{sg}
-			return
+		if nk, okk := hk.Nuk(x.Sig()); okk {
+			return hk.Sig(), x.Sig(), true
 		}
 	
 	// otherwise if x is not lef try to recurse on kid hok
 	} else {
-		if kid, has := hk.Kid(sg); has {
-			if nk, xs, ok = Dox(kid, x.Kid()); ok {
-				xs = append(xs, sg)
-			}
-			return
+		if kid, has := hk.Kid(x.Sig()); has {
+			return Dox(kid, x.Kid())
 		}
 	}
 	
-	// otherwise try to dox with ark
-	if ark := hk.Ark(); ark != nil {
+	// otherwise try to recurse on ark
+	if ark, okk := hk.Ark(); okk {
 		return Dox(ark, x)
 	}
 	
 	// otherwise fail
-	return nil, nil, false
+	ok = false
+	return
 }
 
 // x is lookup address of nuk

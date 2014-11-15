@@ -14,15 +14,18 @@ import (
 type Fig struct {
 	S klv.Sig
 	A klv.Hok
-	kids map[klv.Sig]klv.Hok
-	deks map[klv.Sig]klv.Nuk
+	Kids map[klv.Sig]klv.Hok
+	Nuks map[klv.Sig]klv.Nuk
 	// deks["Joint"] --> Warp
 }
 func (self Fig) Sig() klv.Sig {
 	return self.S
 }
-func (self Fig) Ark() klv.Hok {
-	return self.A
+func (self Fig) Ark() (klv.Hok, bool) {
+	if self.A == nil {
+		return nil, false
+	}
+	return self.A, true
 }
 func (self Fig) HasKids() bool {
 	return self.kids != nil
@@ -61,44 +64,19 @@ func (self Fig) Swlo(nuk klv.Nuk) klv.X {
 // *** fig nuks
 // ****************
 
-// *** skalr
-type Skalr struct {
-	S klv.Sig
-	N klv.Nal // float64 value
+// *** delta
+type Delta struct {
+	Sg klv.Sig
+	Cmps [2]float64
 }
-func (self Skalr) Sig() klv.Sig {
-	return self.S
-}
-func (self Skalr) Nal() (klv.Nal, bool) {
-	return self.N, true
-}
-
-// *** neg - negates kid value
-type Neg struct {
-	klv.Guk // provides nal func
-	S klv.Sig
-	Valu klv.X // value
-}
-func (self Neg) Sig() klv.Sig {
-	return self.S
-}
-
-// *** vek
-type Vek struct {
-	klv.Guk // provides nal func
-	S klv.Sig
-	V klv.X
-	U klv.X
-}
-func (self Vek) Sig() klv.Sig {
-	return self.S
+func (self Delta) Sig() klv.Sig {
+	return self.Sg
 }
 
 // *** warps
 type LatWarp struct {
-	klv.Guk // provides nal func
 	S klv.Sig
-	Dlta klv.X // delta vector
+	Lat klv.X
 }
 func (self LatWarp) Sig() klv.Sig {
 	return self.S
@@ -106,7 +84,7 @@ func (self LatWarp) Sig() klv.Sig {
 type FlktWarp struct {
 	klv.Guk // provides nal func
 	S klv.Sig
-	Sym klv.X // line of symmetry 
+	Sym klv.X
 }
 func (self FlktWarp) Sig() klv.Sig {
 	return self.S
@@ -114,7 +92,7 @@ func (self FlktWarp) Sig() klv.Sig {
 type RotWarp struct {
 	klv.Guk // provides nal func
 	S klv.Sig
-	Hed klv.X // heading to rotate by
+	Hed klv.X
 }
 func (self RotWarp) Sig() klv.Sig {
 	return self.S
@@ -122,7 +100,7 @@ func (self RotWarp) Sig() klv.Sig {
 type SkalWarp struct {
 	klv.Guk // provides nal func
 	S klv.Sig
-	Skal klv.X // vek to scale by
+	Skal klv.X
 }
 func (self SkalWarp) Sig() klv.Sig {
 	return self.S
@@ -130,45 +108,38 @@ func (self SkalWarp) Sig() klv.Sig {
 type CmboWarp struct {
 	klv.Guk // provides nal func
 	S klv.Sig
-	A klv.X
-	B klv.X
+	Wrps [2]klv.X
 }
 func (self CmboWarp) Sig() klv.Sig {
 	return self.S
 }
 
-// *** pin
-type Pin struct {
-	klv.Guk // provides nal func
-	S klv.Sig
-	At klv.X // pin position
+// gid
+type Gid struct {
+	Sg klv.Sig
+	Dlta klv.X
 }
-func (self Pin) Sig() klv.Sig {
-	return self.S
-}
-
-// *** ra
-type Ra struct {
-	klv.Guk // provides nal func
-	S klv.Sig
-	A klv.X // first pin
-	B klv.X // second pin
-}
-func (self Ra) Sig() klv.Sig {
-	return self.S
+func (self Gid) Sig() klv.Sig {
+	return self.Sg
 }
 
-// *** Yok
-type Yok struct {
-	klv.Guk // provides nal func
-	S klv.Sig
-	A klv.X // first ra
-	B klv.X // second ra
-	Van klv.X // vane vek
+// pins
+type LatPin struct {
+	Sg klv.Sig
+	Dlta klv.X
 }
-func (self Yok) Sig() klv.Sig {
-	return self.S
+func (self DeltaPin) Sig() klv.Sig {
+	return self.Sg
 }
+
+type SektPin struct {
+	Sg klv.Sig
+	Gids [2]klv.X
+}
+func (self SektPin) Sig() klv.Sig {
+	return self.Sg
+}
+
 
 // *** flit
 type Flit struct {
