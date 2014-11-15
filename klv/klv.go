@@ -13,7 +13,7 @@ import (
 type Sig string
 type XSig []Sig
 func (self XSig) SpliceKid(kid XSig) XSig {
-	return append(self[:len(self) - 1], kid)
+	return append(self[:len(self) - 1], kid...)
 }
 type Nal float64
 
@@ -47,15 +47,15 @@ func Dox(hk Hok, x X) (nk Nuk, xs XSig, ok bool) {
 	// if x is leaf try to return nuk by x.sig
 	if x.IsLef() {
 		if nk, ok = hk.Nuk(sg); ok {
-			xs = Xsig{sg}
+			xs = XSig{sg}
 			return
 		}
 	
 	// otherwise if x is not lef try to recurse on kid hok
 	} else {
 		if kid, has := hk.Kid(sg); has {
-			if nk, ss, ok = Dox(kid, x.Kid()); ok {
-				xs = append(ss, sg)
+			if nk, xs, ok = Dox(kid, x.Kid()); ok {
+				xs = append(xs, sg)
 			}
 			return
 		}

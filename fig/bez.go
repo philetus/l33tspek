@@ -60,7 +60,8 @@ type warpNod struct {
 }
 
 func (self Fig) Bezize(flitSig klv.Sig) (bzs []Bez) {
-	flit, ok := self.getFlit(flitSig); !ok {
+	flit, ok := self.getFlit(flitSig)
+	if !ok {
 		panic("couldnt find flit for sig: %v", flitSig)
 	}
 	
@@ -85,6 +86,8 @@ func (self Fig) Bezize(flitSig klv.Sig) (bzs []Bez) {
 				// descend warp tree for each vek and mog
 				wrp := self.klapWarpTree(warpRut, vek.xs)
 				vek.glob = flat.Mog(wrp, vek.lok)
+			}
+		}
 	}
 	
 	// build slice of bezs from skaf yoks and return
@@ -215,7 +218,7 @@ func (self Fig) klapRas(yok skfYok) (ras []skfRa, ok bool) {
 
 func (self Fig) klapVan(yok skfYok) (van skfVan, ok bool) {
 	if rent, okk := self.getKid(yok.xs); okk {
-		if lok, okk := rent.klapFltVk(yok.nuk.Van)
+		if lok, okk := rent.klapFltVk(yok.nuk.Van) {
 			van.lok = lok
 			ok = true
 		}
@@ -294,34 +297,36 @@ func (self Fig) klapJoint() flat.Warp {
 func (self Fig) klapWarp(x klv.X) (flat.Warp, bool) {
 	
 	// dox warp nuk
-	if wrp, _, ok := klv.Dox(self, x); ok {
+	if wrp, xs, ok := klv.Dox(self, x); ok {
+		if rent, ok := self.getKid(xs); ok {
  
-	 	// use type switch to do the right thing
-		switch wrp := wrp.(type) {
-		case CmboWarp: // recurse and klap subwarps
-			if fltWrpA, okk := self.klapWarp(wrp.A); okk {
-				if fltWrpB, okl := self.klapWarp(wrp.B); okl {
-					return flat.CmboWarp(fltWrpA, fltWrpB), true
+		 	// use type switch to do the right thing
+			switch wrp := wrp.(type) {
+			case CmboWarp: // recurse and klap subwarps
+				if fltWrpA, okk := rent.klapWarp(wrp.A); okk {
+					if fltWrpB, okl := rent.klapWarp(wrp.B); okl {
+						return flat.CmboWarp(fltWrpA, fltWrpB), true
+					}
 				}
+			case LatWarp:
+				if dlta, okk := rent.klapFltVk(wrp.Dlta); okk {
+					return flat.LatWarp(dlta), true
+				}
+			case RotWarp:
+				if hed, okk := rent.klapFltVk(wrp.Hed); okk {
+					return flat.RotWarp(hed), true
+				}
+			case FlktWarp:
+				if sym, okk := rent.klapFltVk(wrp.Sym); okk {
+					return flat.FlktWarp(sym), true
+				}
+			case SkalWarp:
+				if skal, okk := rent.klapFltVk(wrp.Skal); okk {
+					return flat.SkalWarp(skal), true
+				}
+			default:
+				panic(fmt.Sprintf("unexpected type for fig joint: %v", wrp))
 			}
-		case LatWarp:
-			if dlta, _, okk := self.klapVek(wrp.Dlta); okk {
-				return flat.LatWarp(dlta), true
-			}
-		case RotWarp:
-			if hed, _, okk := self.klapVek(wrp.Hed); okk {
-				return flat.RotWarp(hed), true
-			}
-		case FlktWarp:
-			if sym, _, okk := self.klapVek(wrp.Sym); okk {
-				return flat.FlktWarp(sym), true
-			}
-		case SkalWarp:
-			if skal, _, okk := self.klapVek(wrp.Skal); okk {
-				return flat.SkalWarp(skal), true
-			}
-		default:
-			panic(fmt.Sprintf("unexpected type for fig joint: %v", wrp))
 		}
 	}
 	return nil, false // if didnt return already fail
