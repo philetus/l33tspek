@@ -8,6 +8,10 @@ import (
 	"github.com/philetus/l33tspek/klv"
 )
 
+const (
+	JointNuk = "_joint"
+)
+
 //
 // *** fig implements hok for 2d geometry models
 //
@@ -16,7 +20,7 @@ type Fig struct {
 	A klv.Hok
 	Kids map[klv.Sig]klv.Hok
 	Nuks map[klv.Sig]klv.Nuk
-	// deks["Joint"] --> Warp
+	// Nuks["_joint"] --> Warp sig
 }
 func (self Fig) Sig() klv.Sig {
 	return self.S

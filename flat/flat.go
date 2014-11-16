@@ -27,17 +27,19 @@ type Wek [3]float64
 type Warp [3]Wek
 
 // string methods
-func (vk *Vek) String() string {
+func (vk Vek) String() string {
 	return fmt.Sprint(vk[0], vk[1])
 }
-func (wk *Wek) String() string {
+func (wk Wek) String() string {
 	return fmt.Sprint(wk[0], wk[1], wk[2])
 }
-func (wrp *Warp) String() string {
+func (wrp Warp) String() string {
 	return fmt.Sprint(
 		"%s %s %s", 
 		wrp[0].String(), wrp[1].String(), wrp[2].String())
 }
+
+type Warpr func(Vek) Warp
 
 // generates a translation matrix from a delta vector
 func LatWarp(dlta Vek) Warp {
