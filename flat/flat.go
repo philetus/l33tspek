@@ -5,7 +5,6 @@ package flat
 import (
 	"fmt"
 	"math"
-	//"reflect"
 )
 
 var (
@@ -15,6 +14,9 @@ var (
 		Wek{0.0, 1.0, 0.0},
 		Wek{0.0, 0.0, 1.0},
 	}
+	
+	Down = Vek{1.0, 0.0}
+	Left = Vek{0.0, 1.0}
 )
 
 // 2d vector

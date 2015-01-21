@@ -3,8 +3,9 @@ package main
 import (
 	"fmt"
 	"github.com/philetus/eezl"
+	"github.com/philetus/l33tspek/tag"
 	"github.com/philetus/l33tspek/flat"
-	"github.com/philetus/l33tspek/flat/fig"
+	"github.com/philetus/l33tspek/fig"
 )
 
 func main() {
@@ -13,7 +14,7 @@ func main() {
 	fmt.Printf("created new eezl!\n")
 	
 	fg := &fig.Fig{
-		Hndl: fig.Handl{"bands"},
+		Dfl: tag.Dufl{"bands"},
 	}
 	
 	// set up swags
@@ -34,7 +35,7 @@ func main() {
 	// set up band
 	bildFlit(
 		fg, 
-		fig.Handl{"bnd"},
+		tag.Dufl{"bnd"},
 		fig.Swag{}, fig.Swag{}, // default swag not visible
 		flat.Vek{}, flat.Vek{}, // init with veks at 0, 0
 	)
@@ -61,7 +62,7 @@ func main() {
 					lst = frst
 					bildFlit(
 						fg, 
-						fig.Handl{"bnd"},
+						tag.Dufl{"bnd"},
 						fig.Swag{}, bndSwg,
 						frst, lst,
 					)
@@ -75,7 +76,7 @@ func main() {
 					lnKnt++
 					bildFlit(
 						fg, 
-						fig.Handl{fig.Sig(s)},
+						tag.Dufl{tag.Handl(s)},
 						fig.Swag{}, linSwg,
 						frst, lst,
 					)
@@ -83,7 +84,7 @@ func main() {
 					// set band visibility to false
 					bildFlit(
 						fg, 
-						fig.Handl{"bnd"},
+						tag.Dufl{"bnd"},
 						fig.Swag{}, fig.Swag{}, // default is not visible
 						frst, lst,
 					)
@@ -99,7 +100,7 @@ func main() {
 						// rebuild band flit in current position
 						bildFlit(
 							fg, 
-							fig.Handl{"bnd"},
+							tag.Dufl{"bnd"},
 							fig.Swag{}, bndSwg,
 							frst, lst,
 						)
@@ -128,7 +129,7 @@ func main() {
 
 func bildFlit(
 		fg *fig.Fig,
-		hndl fig.Handl,
+		dfl tag.Dufl,
 		ykSwg, fltSwg fig.Swag,
 		frst, lst flat.Vek,
 	) fig.Flit {
@@ -136,26 +137,26 @@ func bildFlit(
 	// build marks
 	yks := []fig.Yok{
 		fig.Yok{
-			Hndl: append(hndl, "_frst"), // append yok sig to handl
+			Dfl: append(dfl, "_frst"), // append yok sig to handl
 			Swg: ykSwg,
 			Spt: frst,
 		},
 		fig.Yok{
-			Hndl: append(hndl, "_lst"),
+			Dfl: append(dfl, "_lst"),
 			Swg: ykSwg,
 			Spt: lst,
 		},
 	}
 	flt := fig.Flit{
-			Hndl: hndl,
+			Dfl: dfl,
 			Swg: fltSwg,
-			Yoks: []fig.Handl{yks[0].Hndl, yks[1].Hndl},
+			Yoks: []tag.Dufl{yks[0].Dfl, yks[1].Dfl},
 	}
 	
 	// deks marks with fig
-	fg.Add(yks[0])
-	fg.Add(yks[1])
-	fg.Add(flt)
+	fg.Skrib(yks[0])
+	fg.Skrib(yks[1])
+	fg.Skrib(flt)
 	
 	return flt
 }

@@ -1,157 +1,120 @@
-// 2d hok geometry model
+// simple 2d vector image spek
 
 package fig
 
 import (
-	//"fmt"
-	//"reflect"
-	"github.com/philetus/l33tspek/klv"
+	"fmt"
+	"github.com/philetus/l33tspek/flat"
+	"github.com/philetus/l33tspek/tag"
 )
 
-const (
-	JointNuk = "_joint"
-)
-
-//
-// *** fig implements hok for 2d geometry models
-//
 type Fig struct {
-	S klv.Sig
-	A klv.Hok
-	Kids map[klv.Sig]klv.Hok
-	Nuks map[klv.Sig]klv.Nuk
-	// Nuks["_joint"] --> Warp sig
+	Dfl tag.Dufl
+	PaanBag tag.DuflBag
+	FlitBag tag.DuflBag
+	YokBag tag.DuflBag
 }
-func (self Fig) Sig() klv.Sig {
-	return self.S
+func (self *Fig) Skrib(mrk Mark) {
+	
+	switch mrk := mrk.(type) {
+	default:
+    	fmt.Printf("cant add mark to fig: unexpected type %T", mrk)
+    case Paan:
+    	self.PaanBag.Stass(mrk)
+    case Flit:
+    	self.FlitBag.Stass(mrk)
+    case Yok:
+    	self.YokBag.Stass(mrk)
+    }
 }
-func (self Fig) Ark() (klv.Hok, bool) {
-	if self.A == nil {
-		return nil, false
-	}
-	return self.A, true
-}
-func (self Fig) HasKids() bool {
-	return self.kids != nil
-}
-func (self Fig) Kid(sig klv.Sig) (kid klv.Hok, has bool) {
-	if !self.HasKids() {
-		return nil, false
-	}
-	kid, has = self.Kids[sig]
+func (self *Fig) FekkPaan(dfl tag.Dufl) (pn Paan, has bool) {
+		if dflr, hs := self.PaanBag.Fekk(dfl); hs {
+			pn, has = dflr.(Paan)
+		}
 	return
 }
-func (self Fig) Jnt(kid klv.Hok) klv.Hok {
-	if !self.HasKids() {
-		self.kids = make(map[klv.Sig]klv.Hok)
-	}
-	self.kids[kid.Sig()] = kid
-	return kid
-}
-func (self Fig) Nuk(sig klv.Sig) (nuk klv.Nuk, has bool) {
-	if !self.HasNuks() {
-		return nil, false
-	}
-	nuk, has = self.deks[sig]
+func (self *Fig) FekkFlit(dfl tag.Dufl) (flt Flit, has bool) {
+		if dflr, hs := self.FlitBag.Fekk(dfl); hs {
+			flt, has = dflr.(Flit)
+		}
 	return
 }
-func (self Fig) Swlo(nuk klv.Nuk) klv.X {
-	if !self.HasNuks() {
-		self.deks = make(map[klv.Sig]klv.Nuk)
-	}
-	sig := nuk.Sig()
-	self.deks[sig] = nuk
-	return klv.Xd{S: sig}
+func (self *Fig) FekkYok(dfl tag.Dufl) (yk Yok, has bool) {
+		if dflr, hs := self.YokBag.Fekk(dfl); hs {
+			yk, has = dflr.(Yok)
+		}
+	return
 }
 
-// ****************
-// *** fig nuks
-// ****************
-
-// *** delta
-type Delta struct {
-	Sg klv.Sig
-	Cmps [2]float64
-}
-func (self Delta) Sig() klv.Sig {
-	return self.Sg
+type Mark interface {
+	Dufl() tag.Dufl
+	Swag() Swag
+	String() string
 }
 
-// *** warps
-type LatWarp struct {
-	S klv.Sig
-	Lat klv.X
+type Paan struct {
+	Dfl tag.Dufl
+	Swg Swag
+	Flits []tag.Dufl
 }
-func (self LatWarp) Sig() klv.Sig {
-	return self.S
+func (self Paan) Dufl() tag.Dufl {
+	return self.Dfl
 }
-type FlktWarp struct {
-	klv.Guk // provides nal func
-	S klv.Sig
-	Sym klv.X
+func (self Paan) Swag() Swag {
+	return self.Swg
 }
-func (self FlktWarp) Sig() klv.Sig {
-	return self.S
+func (self Paan) String() string {
+	return fmt.Sprintf("{Paan %v}", self.Dfl)
 }
-type RotWarp struct {
-	klv.Guk // provides nal func
-	S klv.Sig
-	Hed klv.X
-}
-func (self RotWarp) Sig() klv.Sig {
-	return self.S
-}
-type SkalWarp struct {
-	klv.Guk // provides nal func
-	S klv.Sig
-	Skal klv.X
-}
-func (self SkalWarp) Sig() klv.Sig {
-	return self.S
-}
-type CmboWarp struct {
-	klv.Guk // provides nal func
-	S klv.Sig
-	Wrps [2]klv.X
-}
-func (self CmboWarp) Sig() klv.Sig {
-	return self.S
-}
-
-// gid
-type Gid struct {
-	Sg klv.Sig
-	Dlta klv.X
-}
-func (self Gid) Sig() klv.Sig {
-	return self.Sg
-}
-
-// pins
-type LatPin struct {
-	Sg klv.Sig
-	Dlta klv.X
-}
-func (self DeltaPin) Sig() klv.Sig {
-	return self.Sg
-}
-
-type SektPin struct {
-	Sg klv.Sig
-	Gids [2]klv.X
-}
-func (self SektPin) Sig() klv.Sig {
-	return self.Sg
-}
-
-
-// *** flit
 type Flit struct {
-	klv.Guk // provides nal func
-	S klv.Sig
-	Yoks []klv.X
+	Dfl tag.Dufl
+	Swg Swag
+	Yoks []tag.Dufl
 }
-func (self Flit) Sig() klv.Sig {
-	return self.S
+func (self Flit) Dufl() tag.Dufl {
+	return self.Dfl
+}
+func (self Flit) Swag() Swag {
+	return self.Swg
+}
+func (self Flit) String() string {
+	return fmt.Sprintf("{Flit %v}", self.Dfl)
+}
+type Yok struct {
+	Dfl tag.Dufl
+	Swg Swag
+	Spt flat.Vek // spot
+	Gd flat.Vek // gid
+}
+func (self Yok) Dufl() tag.Dufl {
+	return self.Dfl
+}
+func (self Yok) Swag() Swag {
+	return self.Swg
+}
+func (self Yok) String() string {
+	return fmt.Sprintf("{Yok %v}", self.Dfl)
+}
+
+type Swag struct {
+	Vz bool
+	Dpth float64
+	Wt float64
+	Klr [4]float64 // r g b a
+}
+func (self Swag) Komp(othr Swag) bool {
+	if self.Vz != othr.Vz {
+		return false
+	}
+	if self.Dpth != othr.Dpth {
+		return false
+	}
+	if self.Wt != othr.Wt {
+		return false
+	}
+	if self.Klr != othr.Klr {
+		return false
+	}
+	return true
 }
 

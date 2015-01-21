@@ -5,21 +5,23 @@ package fig
 import (
 	"fmt"
 	"sort"
-	"github.com/philetus/l33tspek/flat"
 	"github.com/philetus/eezl"
+	"github.com/philetus/l33tspek/tag"
+	"github.com/philetus/l33tspek/flat"
 )
 
-func (self Fig) Gelr(gel *eezl.Gel, wrp flat.Warp) {
+func (self *Fig) Gelr(gel *eezl.Gel, wrp flat.Warp) {
 	nowSwg := Swag{} // start with default swag
 	
 	// compile marks from individual trees
 	mrks := []Mark{}
-	for _, tree := range []*MarkTree{self.Paans, self.Flits, self.Yoks} {
-		if tree != nil {
-			for mrk := range tree.Iter() {
-				mrks = append(mrks, mrk)
+	bags := []tag.DuflBag{self.PaanBag, self.FlitBag, self.YokBag}
+	for _, bag := range bags {
+			for dflr := range bag.Iter() {
+				if mrk, is := dflr.(Mark); is {
+					mrks = append(mrks, mrk)
+				}
 			}
-		}
 	}
 	
 	// sort by depth and iterate over marks
@@ -44,20 +46,20 @@ func (self Fig) Gelr(gel *eezl.Gel, wrp flat.Warp) {
 				
 				// jump to beginning of flit
 				var nxt flat.Vek
-				if nxtYok, has := self.GetYok(mrk.Yoks[0]); has {
+				if nxtYok, has := self.FekkYok(mrk.Yoks[0]); has {
 					nxt = flat.Mog(wrp, nxtYok.Spt) // mog veks by global warp
 					gel.Jmto(nxt[0], nxt[1])
 
 					// draw segments of flit
 					for i := 1; i < len(mrk.Yoks); i++ {
 				
-						if nxtYok, has := self.GetYok(mrk.Yoks[i]); has {
+						if nxtYok, has := self.FekkYok(mrk.Yoks[i]); has {
 							nxt = flat.Mog(wrp, nxtYok.Spt)
 							gel.Rato(nxt[0], nxt[1])
 						} else {
 							fmt.Printf(
 								"fail! missing yok %v for flit %v", 
-								mrk.Yoks[i], mrk.Handl(),
+								mrk.Yoks[i], mrk.Dfl,
 							)
 						}
 					}
@@ -66,7 +68,7 @@ func (self Fig) Gelr(gel *eezl.Gel, wrp flat.Warp) {
 				}  else {
 					fmt.Printf(
 						"fail! missing first yok %v for flit %v", 
-						mrk.Yoks[0], mrk.Handl(),
+						mrk.Yoks[0], mrk.Dfl,
 					)
 				}
 				
