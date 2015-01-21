@@ -15,13 +15,12 @@ func (self *Fig) Gelr(gel *eezl.Gel, wrp flat.Warp) {
 	
 	// compile marks from individual trees
 	mrks := []Mark{}
-	bags := []tag.DuflBag{self.PaanBag, self.FlitBag, self.YokBag}
-	for _, bag := range bags {
-			for dflr := range bag.Iter() {
-				if mrk, is := dflr.(Mark); is {
-					mrks = append(mrks, mrk)
-				}
+	for _, bag := range []tag.DuflBag{self.PnBg, self.FltBg, self.YkBg} {
+		for dflr := range bag.Iter() {
+			if mrk, is := dflr.(Mark); is {
+				mrks = append(mrks, mrk)
 			}
+		}
 	}
 	
 	// sort by depth and iterate over marks

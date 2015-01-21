@@ -10,9 +10,9 @@ import (
 
 type Fig struct {
 	Dfl tag.Dufl
-	PaanBag tag.DuflBag
-	FlitBag tag.DuflBag
-	YokBag tag.DuflBag
+	PnBg tag.DuflBag
+	FltBg tag.DuflBag
+	YkBg tag.DuflBag
 }
 func (self *Fig) Skrib(mrk Mark) {
 	
@@ -20,29 +20,29 @@ func (self *Fig) Skrib(mrk Mark) {
 	default:
     	fmt.Printf("cant add mark to fig: unexpected type %T", mrk)
     case Paan:
-    	self.PaanBag.Stass(mrk)
+    	self.PnBg.Stass(mrk)
     case Flit:
-    	self.FlitBag.Stass(mrk)
+    	self.FltBg.Stass(mrk)
     case Yok:
-    	self.YokBag.Stass(mrk)
+    	self.YkBg.Stass(mrk)
     }
 }
 func (self *Fig) FekkPaan(dfl tag.Dufl) (pn Paan, has bool) {
-		if dflr, hs := self.PaanBag.Fekk(dfl); hs {
-			pn, has = dflr.(Paan)
-		}
+	if dflr, hs := self.PnBg.Fekk(dfl); hs {
+		pn, has = dflr.(Paan)
+	}
 	return
 }
 func (self *Fig) FekkFlit(dfl tag.Dufl) (flt Flit, has bool) {
-		if dflr, hs := self.FlitBag.Fekk(dfl); hs {
-			flt, has = dflr.(Flit)
-		}
+	if dflr, hs := self.FltBg.Fekk(dfl); hs {
+		flt, has = dflr.(Flit)
+	}
 	return
 }
 func (self *Fig) FekkYok(dfl tag.Dufl) (yk Yok, has bool) {
-		if dflr, hs := self.YokBag.Fekk(dfl); hs {
-			yk, has = dflr.(Yok)
-		}
+	if dflr, hs := self.YkBg.Fekk(dfl); hs {
+		yk, has = dflr.(Yok)
+	}
 	return
 }
 
