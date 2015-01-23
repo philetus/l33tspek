@@ -30,13 +30,13 @@ type Warp [3]Wek
 
 // string methods
 func (vk Vek) String() string {
-	return fmt.Sprint(vk[0], vk[1])
+	return fmt.Sprintf("[%.2f %.2f]", vk[0], vk[1])
 }
 func (wk Wek) String() string {
-	return fmt.Sprint(wk[0], wk[1], wk[2])
+	return fmt.Sprintf("[%.2f %.2f %.2f]", wk[0], wk[1], wk[2])
 }
 func (wrp Warp) String() string {
-	return fmt.Sprint(
+	return fmt.Sprintf(
 		"%s %s %s", 
 		wrp[0].String(), wrp[1].String(), wrp[2].String())
 }
@@ -69,7 +69,7 @@ func RotWarp(hed Vek) Warp {
 
 // generates a translation matrix from a symmetry line
 // if symmetry line is zero magnitude returns identity matrix
-func FlktWarp(sym Vek) Warp {
+func FlektWarp(sym Vek) Warp {
 	u, ok := Normlz(sym)
 	if !ok {
 		return IandI
@@ -159,7 +159,7 @@ func Mog(w Warp, v Vek) Vek {
 }
 
 // multiply two warps and return result as new warp
-func CmboWarp(a, b Warp) Warp {
+func ComboWarp(a, b Warp) Warp {
 	return Warp{
 		Wek{
 			a[0][0]*b[0][0] + a[0][1]*b[1][0] + a[0][2]*b[2][0],

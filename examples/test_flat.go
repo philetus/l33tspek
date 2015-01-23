@@ -9,19 +9,19 @@ func main() {
 	a := flat.Vek{2.0, 3.0}
 	fmt.Printf("a: %v\n", a)
 	
-	i := flat.Mog(a, flat.IandI)
+	i := flat.Mog(flat.IandI, a)
 	fmt.Printf("i: %v\n", i)
 
 	lw := flat.LatWarp(a)
 	fmt.Printf("lw: %v\n", lw)
 	
-	b := flat.Mog(a, lw)
+	b := flat.Mog(lw, a)
 	fmt.Printf("b: %v\n", b)
 	
-	fw := flat.FlktWarp(flat.Vek{1.0, 1.0})
+	fw := flat.FlektWarp(flat.Vek{1.0, 1.0})
 	fmt.Printf("fw: %v\n", fw)
 
-	c := flat.Mog(a, fw)
+	c := flat.Mog(fw, a)
 	fmt.Printf("c: %v\n", c)
 	
 	hdng := flat.Vek{0.0, 1.0}
@@ -33,19 +33,19 @@ func main() {
 	rw := flat.RotWarp(hdng)
 	fmt.Printf("rw: %v\n", rw)
 
-	d := flat.Mog(a, rw)
+	d := flat.Mog(rw, a)
 	fmt.Printf("d: %v\n", d)
 	
-	lrw := flat.CmboWarp(lw, rw)
+	lrw := flat.ComboWarp(lw, rw)
 	fmt.Printf("lrw: %v\n", lrw)
 	
-	rlw := flat.CmboWarp(rw, lw)
+	rlw := flat.ComboWarp(rw, lw)
 	fmt.Printf("rlw: %v\n", rlw)
 	
-	e := flat.Mog(a, lrw)
+	e := flat.Mog(lrw, a)
 	fmt.Printf("e: %v\n", e)
 
-	f := flat.Mog(a, rlw)
+	f := flat.Mog(rlw, a)
 	fmt.Printf("f: %v\n", f)
 	
 }
