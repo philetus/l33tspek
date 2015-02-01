@@ -3,155 +3,148 @@ package main
 import (
 	"fmt"
 	"github.com/philetus/eezl"
-	"github.com/philetus/l33tspek/klv"
+	"github.com/philetus/l33tspek/tag"
+	"github.com/philetus/l33tspek/flat"
 	"github.com/philetus/l33tspek/fig"
+	"github.com/philetus/l33tspek/zib"
 )
 
-func butterfly() *fig.Fig {
+func butterfly(sss *zib.Sess) {
 
-    // build left profile of butterfly as fig
-    lp := fig.Fig{S: "lp"}
-    lp.Swlo(fig.Pin{
-    	S: "p0", 
-    	At: lp.Swlo(fig.Vek{
-    		V: lp.Swlo(fig.Skalr{N: 35.0}),
-    		U: lp.Swlo(fig.Skalr{N: 25.0}),
-    	}),
-    })
-    lp.Swlo(fig.Pin{
-    	S: "p1", 
-    	At: lp.Swlo(fig.Vek{
-    		V: lp.Swlo(fig.Skalr{N: 0.0}),
-    		U: lp.Swlo(fig.Skalr{N: 0.0}),
-    	}),
-    })
-    lp.Swlo(fig.Pin{
-    	S: "p2", 
-    	At: lp.Swlo(fig.Vek{
-    		V: lp.Swlo(fig.Skalr{N: 35.0}),
-    		U: lp.Swlo(fig.Skalr{N: 25.0}),
-    	}),
-    })
-    lp.Swlo(fig.Ra{S:"r0", A: klv.Xd{"p0"}, B: klv.Xd{"p1"}})
-    lp.Swlo(fig.Ra{S:"r1", A: klv.Xd{"p1"}, B: klv.Xd{"p2"}})
-    lp.Swlo(fig.Yok{
-    	S: "y0",
-    	A: klv.Xd{"r0"},
-    	B: klv.Xd{"r1"},
-    	Van: lp.Swlo(fig.Vek{
-    		S: "vDown",
-    		V: lp.Swlo(fig.Skalr{N: 1.0}),
-    		U: lp.Swlo(fig.Skalr{N: 0.0}),
-    	}),
-    })
-    
-    // joint for left profile
-    lp.Swlo(fig.LatWarp{
-    	S: "Joint",
-    	Dlta: lp.Swlo(fig.Vek{
-    		S: "vJnt",
-    		V: lp.Swlo(fig.Skalr{N: 0.0}),
-    		U: lp.Swlo(fig.Skalr{S: "sWaist", N: 15.0}),
-    	}),
-    })
-    
-    // right profile is new fig with left profile as ark and reflect joint
-    rp := fig.Fig{S: "rp", A: lp}
-    
-    // palmp joint to give right profile mirrored position
-    rp.Swlo(fig.CmboWarp{
-    	S: "Joint",
-    	A: lp.Swlo(fig.LatWarp{Dlta: klv.Xd{"vJnt"}}),
-    	B: lp.Swlo(fig.FlktWarp{Sym: klv.Xd{"vDown"}})
-    })
-    
-	// build main butterfly fig
-    b := fig.Fig{S: "bfly"}
-    
-    // joint left and right profiles into butterfly fig
-    b.Jnt(lp)
-    b.Jnt(rp)
-        
-    // add centerline pins to top fig
-    b.Swlo(fig.Pin{
-    	S: "p0", 
-    	At: lp.Swlo(fig.Vek{
-    		V: lp.Swlo(fig.Skalr{N: 20.0}),
-    		U: lp.Swlo(fig.Skalr{N: 0.0}),
-    	}),
-    })
-    b.Swlo(fig.Pin{
-    	S: "p1", 
-    	At: lp.Swlo(fig.Vek{
-    		V: lp.Swlo(fig.Skalr{N: -15.0}),
-    		U: lp.Swlo(fig.Skalr{N: 0.0}),
-    	}),
-    })
+	// to hold butterfly
+	bfly := &zib.Zib{
+		Hndl: "bfly",
+		Swg: fig.Swag{
+			Dpth: 2.0,
+			Wt: 5.0,
+			Klr: [4]float64{1.0, 0.0, 0.0, 0.6}, // translucent red
+		},
+	}
+	sss.Sup(bfly) // intro to sess
+	sss.Zut(bfly) // set as rut zib
 	
-	// add top and bottom ras, use XX to address pins in subfigs
-    b.Swlo(fig.Ra{S:"r0", A: klv.XX{"lp", klv.Xd{"p0"}}, B: klv.Xd{"p0"}})
-    b.Swlo(fig.Ra{S:"r1", A: klv.Xd{"p0"}, B: klv.XX{"rp", klv.Xd{"p0"}}})
-    b.Swlo(fig.Ra{S:"r2", A: klv.XX{"rp", klv.Xd{"p2"}}, B: klv.Xd{"p1"}})
-    b.Swlo(fig.Ra{S:"r3", A: klv.Xd{"p1"}, B: klv.XX{"lp", klv.Xd{"p2"}}})
+	// default down delta vek [1.0, 0.0]
+	bfly.Skrib(zib.Delta{
+		Hndl: "d_down", 
+		Crds: flat.Down,
+	})
 	
-	// add yoks
-    b.Swlo(fig.Yok{
-    	S: "y0",
-    	A: klv.XX{"lp", klv.Xd{"r0"}},
-    	B: klv.Xd{"r0"},
-    	Van: lp.Swlo(fig.Vek{
-    		S: "vDown",
-    		V: lp.Swlo(fig.Skalr{N: 1.0}),
-    		U: lp.Swlo(fig.Skalr{N: 0.0}),
-    	}),
-    })
-    b.Swlo(fig.Yok{
-    	S: "y1",
-    	A: klv.Xd{"r0"},
-    	B: klv.Xd{"r1"},
-    	Van: klv.Xd{"vDown"},
-    })
-    b.Swlo(fig.Yok{
-    	S: "y2",
-    	A: klv.Xd{"r1"},
-    	B: klv.XX{"rp", klv.Xd{"r1"}},
-    	Van: klv.Xd{"vDown"},
-    })
-    b.Swlo(fig.Yok{
-    	S: "y3",
-    	A: klv.XX{"rp", klv.Xd{"r1"}},
-    	B: klv.Xd{"r2"},
-    	Van: klv.Xd{"vDown"},
-    })
-    b.Swlo(fig.Yok{
-    	S: "y4",
-    	A: klv.Xd{"r2"},
-    	B: klv.Xd{"r3"},
-    	Van: klv.Xd{"vDown"},
-    })
-    b.Swlo(fig.Yok{
-    	S: "y5",
-    	A: klv.Xd{"r3"},
-    	B: klv.XX{"lp", klv.Xd{"r1"}},
-    	Van: klv.Xd{"vDown"},
-    })
+	// butterfly spine yoks
+	bfly.Skrib(zib.Delta{
+		Hndl: "d0",
+		Crds: flat.Vek{0.0, 0.0},
+	})
+	bfly.Skrib(zib.Yok{
+		Hndl: "y0",
+		Spt: zib.XDelta{"bfly", "d0"},
+		Gd: zib.XDelta{"bfly", "d_down"},
+	})
+	bfly.Skrib(zib.Delta{
+		Hndl: "d1",
+		Crds: flat.Vek{-33.0, 0.0},
+	})
+	bfly.Skrib(zib.Yok{
+		Hndl: "y1",
+		Spt: zib.XDelta{"bfly", "d1"},
+		Gd: zib.XDelta{"bfly", "d_down"},
+	})
+	
+	// left wing
+	lwng := &zib.Zib{
+		Hndl: "lwng",
+		Wrp: zib.XWarp{"lwng", "hip"}, // defined below
+	}
+	sss.Sup(lwng) // intro to sess
+	bfly.Nyun(lwng) // sub to bfly
+	
+	// hip translation warp
+	lwng.Skrib(zib.Delta{
+		Hndl: "d_hip", 
+		Crds: flat.Vek{8.0, 15.0},
+	})
+	lwng.Skrib(zib.LatWarp{ // transform to first yok of left wing profile
+		Hndl: "hip",
+		Dlta: zib.XDelta{"lwng", "d_hip"},
+	})
+	
+	// left wing profile yoks
+	lwng.Skrib(zib.Delta{
+		Hndl: "d0",
+		Crds: flat.Vek{0.0, 0.0},
+	})
+	lwng.Skrib(zib.Yok{
+		Hndl: "y0",
+		Spt: zib.XDelta{"lwng", "d0"},
+		Gd: zib.XDelta{"bfly", "d_down"},
+	})
+	lwng.Skrib(zib.Delta{
+		Hndl: "d1",
+		Crds: flat.Vek{7.0, 15.0},
+	})
+	lwng.Skrib(zib.Yok{
+		Hndl: "y1",
+		Spt: zib.XDelta{"lwng", "d1"},
+		Gd: zib.XDelta{"bfly", "d_down"},
+	})
+	lwng.Skrib(zib.Delta{
+		Hndl: "d2",
+		Crds: flat.Vek{-26.0, 0.0},
+	})
+	lwng.Skrib(zib.Yok{
+		Hndl: "y2",
+		Spt: zib.XDelta{"lwng", "d2"},
+		Gd: zib.XDelta{"bfly", "d_down"},
+	})
+	lwng.Skrib(zib.Delta{
+		Hndl: "d3",
+		Crds: flat.Vek{-47.0, 5.0},
+	})
+	lwng.Skrib(zib.Yok{
+		Hndl: "y3",
+		Spt: zib.XDelta{"lwng", "d3"},
+		Gd: zib.XDelta{"bfly", "d_down"},
+	})
+
+	// right wing
+	rwng := &zib.Zib{
+		Hndl: "rwng",
+		Ark: zib.XZib{"lwng"}, // inherits marks from lwng
+		Wrp: zib.XWarp{"rwng", "flip_hip"}, // defined below
+	}
+	sss.Sup(rwng) // intro to sess
+	bfly.Nyun(rwng) // sub to bfly
+	
+	// build combowarp that reflects across spine then translates to hip
+	lwng.Skrib(zib.FlektWarp{ 
+		Hndl: "flip",
+		Sym: zib.XDelta{"bfly", "d_down"},
+	})
+	lwng.Skrib(zib.ComboWarp{ 
+		Hndl: "flip_hip",
+		Nyns: []zib.XWarp{
+			{"rwng", "flip"},
+			{"lwng", "hip"},
+		},
+	})
     
-    // wings flit
-    b.Swlo(fig.Flit{
-    	S: "fWings",
-    	Yoks: []X{
-    		klv.Xd{"y0"}, 
-    		klv.Xd{"y1"}, 
-    		klv.Xd{"y2"}, 
-    		klv.XX{"rp", klv.Xd{"y0"}},
-    		klv.Xd{"y3"}, 
-    		klv.Xd{"y4"}, 
-    		klv.Xd{"y5"}, 
-    		klv.XX{"lp", klv.Xd{"y0"}},
+    bfly.Skrib(zib.Flit{
+    	Hndl: "wngs",
+    	Yks: []zib.XYok{
+    		{"bfly", "y0"},
+    		{"lwng", "y0"},
+    		{"lwng", "y1"},
+    		{"lwng", "y2"},
+    		{"lwng", "y3"},
+    		{"bfly", "y1"},
+    		{"rwng", "y3"},
+    		{"rwng", "y2"},
+    		{"rwng", "y1"},
+    		{"rwng", "y0"},
+    		{"bfly", "y0"},
     	},
     })
     
-    return &b
+    return
 }
 
 func main() {
@@ -161,11 +154,21 @@ func main() {
 	
 	var pressed_flag bool = false
 	
-    var ln_thk float64 = 10.0
-    ln_clr := [4]float64{1.0, 0.0, 0.0, 0.6} // slightly translucent red
+    //var ln_thk float64 = 10.0
+    //ln_clr := [4]float64{1.0, 0.0, 0.0, 0.6} // slightly translucent red
     //var bnd_thk float64 = 6.0
     //bnd_clr := [4]float64{0.0, 0.0, 0.0, 0.4} // translucent gray
     bg_clr := [4]float64{1.0, 1.0, 1.0, 1.0} // opaque white
+    
+    // start zib sess and add butterfly to it
+    sss := &zib.Sess{Dfl: tag.Dufl{"examples", "butterfly"}}
+    butterfly(sss)
+    
+    // warp to put butterfly in window
+    wrp := flat.ComboWarp(
+    	flat.LatWarp(flat.Vek{60.0, 40.0}),
+    	flat.SkalWarp(flat.Vek{6.0, 6.0}),
+    )
     
 	for {
 		select {
@@ -201,28 +204,13 @@ func main() {
 				// fill background
 				gel.SetColor(bg_clr[0], bg_clr[1], bg_clr[2], bg_clr[3])
 				gel.Coat()
+								
+				// collapse butterfly sess into fig spek
+				bfig := sss.Klaps()
 				
-				// set line weight and color
-				gel.SetColor(ln_clr[0], ln_clr[1], ln_clr[2], ln_clr[3])
-				gel.SetWeight(ln_thk)
-				
-				// build butterfly
-				bf := butterfly()
-				
-				// klap wing flit of fig into global veks in list of bezs
-				bzs := bf.Bezize("fWings")
-				
-				// draw wing bezs to eezl
-				gel.Jmto(bzs[0].Coords[0][0], bzs[0].Coords[0][1])
-				for _, bz := range bzs {
-					gel.Beto(bz.Coords[1][0], bz.Coords[1][1],
-							 bz.Gids[0][0], bz.Gids[0][1],
-							 bz.Gids[1][0], bz.Gids[1][1])
-				}
-				gel.Seal()
-				gel.Stroke()
-				gel.Shake()
-				
+				// render to gel
+				bfig.Gelr(gel, wrp)
+								
 				// draw band
 				//if pressed_flag {
 				//}

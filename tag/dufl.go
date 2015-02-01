@@ -8,6 +8,9 @@ import (
 
 type Handl string
 type Dufl []Handl
+func (self Dufl) Dufl() Dufl {
+	return self
+}
 func (self Dufl) Komp(othr Dufl) bool {
 	if len(self) != len(othr) {
 		return false

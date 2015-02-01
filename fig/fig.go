@@ -55,7 +55,7 @@ type Mark interface {
 type Paan struct {
 	Dfl tag.Dufl
 	Swg Swag
-	Flits []tag.Dufl
+	Flts []tag.Dufl
 }
 func (self Paan) Dufl() tag.Dufl {
 	return self.Dfl
@@ -64,12 +64,12 @@ func (self Paan) Swag() Swag {
 	return self.Swg
 }
 func (self Paan) String() string {
-	return fmt.Sprintf("{Paan %v}", self.Dfl)
+	return fmt.Sprintf("[Paan %v]", self.Dfl)
 }
 type Flit struct {
 	Dfl tag.Dufl
 	Swg Swag
-	Yoks []tag.Dufl
+	Yks []tag.Dufl
 }
 func (self Flit) Dufl() tag.Dufl {
 	return self.Dfl
@@ -78,7 +78,7 @@ func (self Flit) Swag() Swag {
 	return self.Swg
 }
 func (self Flit) String() string {
-	return fmt.Sprintf("{Flit %v}", self.Dfl)
+	return fmt.Sprintf("[Flit %v]", self.Dfl)
 }
 type Yok struct {
 	Dfl tag.Dufl
@@ -93,17 +93,17 @@ func (self Yok) Swag() Swag {
 	return self.Swg
 }
 func (self Yok) String() string {
-	return fmt.Sprintf("{Yok %v}", self.Dfl)
+	return fmt.Sprintf("[Yok %v]", self.Dfl)
 }
 
 type Swag struct {
-	Vz bool
+	Hd bool // flag to hide mark
 	Dpth float64
 	Wt float64
 	Klr [4]float64 // r g b a
 }
 func (self Swag) Komp(othr Swag) bool {
-	if self.Vz != othr.Vz {
+	if self.Hd != othr.Hd {
 		return false
 	}
 	if self.Dpth != othr.Dpth {
@@ -116,5 +116,8 @@ func (self Swag) Komp(othr Swag) bool {
 		return false
 	}
 	return true
+}
+func (self Swag) Tukkd() bool {
+	return !self.Komp(Swag{})
 }
 

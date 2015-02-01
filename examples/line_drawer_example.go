@@ -19,14 +19,12 @@ func main() {
 	
 	// set up swags
 	bndSwg := fig.Swag{
-		Vz: true,
 		Dpth: 1.0,
 		Wt: 6.0,
 		Klr: [4]float64{0.0, 0.0, 0.0, 0.4}, // translucent gray
 	}
 	
 	linSwg := fig.Swag{
-		Vz: true,
 		Dpth: 2.0,
 		Wt: 10.0,
 		Klr: [4]float64{1.0, 0.0, 0.0, 0.6}, // translucent red
@@ -36,7 +34,7 @@ func main() {
 	bildFlit(
 		fg, 
 		tag.Dufl{"bnd"},
-		fig.Swag{}, fig.Swag{}, // default swag not visible
+		fig.Swag{Hd: true}, fig.Swag{Hd: true}, // set swag hide flag
 		flat.Vek{}, flat.Vek{}, // init with veks at 0, 0
 	)
 	var frst, lst flat.Vek
@@ -63,7 +61,7 @@ func main() {
 					bildFlit(
 						fg, 
 						tag.Dufl{"bnd"},
-						fig.Swag{}, bndSwg,
+						fig.Swag{Hd: true}, bndSwg,
 						frst, lst,
 					)
 					
@@ -77,7 +75,7 @@ func main() {
 					bildFlit(
 						fg, 
 						tag.Dufl{tag.Handl(s)},
-						fig.Swag{}, linSwg,
+						fig.Swag{Hd: true}, linSwg,
 						frst, lst,
 					)
 					
@@ -85,7 +83,7 @@ func main() {
 					bildFlit(
 						fg, 
 						tag.Dufl{"bnd"},
-						fig.Swag{}, fig.Swag{}, // default is not visible
+						fig.Swag{Hd: true}, fig.Swag{Hd: true}, // default is not visible
 						frst, lst,
 					)
 					
@@ -101,7 +99,7 @@ func main() {
 						bildFlit(
 							fg, 
 							tag.Dufl{"bnd"},
-							fig.Swag{}, bndSwg,
+							fig.Swag{Hd: true}, bndSwg,
 							frst, lst,
 						)
 						
@@ -150,7 +148,7 @@ func bildFlit(
 	flt := fig.Flit{
 			Dfl: dfl,
 			Swg: fltSwg,
-			Yoks: []tag.Dufl{yks[0].Dfl, yks[1].Dfl},
+			Yks: []tag.Dufl{yks[0].Dfl, yks[1].Dfl},
 	}
 	
 	// deks marks with fig

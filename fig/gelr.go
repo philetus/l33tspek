@@ -28,7 +28,7 @@ func (self *Fig) Gelr(gel *eezl.Gel, wrp flat.Warp) {
 	for _, mrk := range mrks {
 		
 		ms := mrk.Swag()
-		if ms.Vz {
+		if !ms.Hd {
 			if !ms.Komp(nowSwg) {
 				nowSwg = ms
 				gel.SetColor(ms.Klr[0], ms.Klr[1], ms.Klr[2], ms.Klr[3])
@@ -45,20 +45,20 @@ func (self *Fig) Gelr(gel *eezl.Gel, wrp flat.Warp) {
 				
 				// jump to beginning of flit
 				var nxt flat.Vek
-				if nxtYok, has := self.FekkYok(mrk.Yoks[0]); has {
+				if nxtYok, has := self.FekkYok(mrk.Yks[0]); has {
 					nxt = flat.Mog(wrp, nxtYok.Spt) // mog veks by global warp
 					gel.Jmto(nxt[0], nxt[1])
 
 					// draw segments of flit
-					for i := 1; i < len(mrk.Yoks); i++ {
+					for i := 1; i < len(mrk.Yks); i++ {
 				
-						if nxtYok, has := self.FekkYok(mrk.Yoks[i]); has {
+						if nxtYok, has := self.FekkYok(mrk.Yks[i]); has {
 							nxt = flat.Mog(wrp, nxtYok.Spt)
 							gel.Rato(nxt[0], nxt[1])
 						} else {
 							fmt.Printf(
 								"fail! missing yok %v for flit %v", 
-								mrk.Yoks[i], mrk.Dfl,
+								mrk.Yks[i], mrk.Dfl,
 							)
 						}
 					}
@@ -67,7 +67,7 @@ func (self *Fig) Gelr(gel *eezl.Gel, wrp flat.Warp) {
 				}  else {
 					fmt.Printf(
 						"fail! missing first yok %v for flit %v", 
-						mrk.Yoks[0], mrk.Dfl,
+						mrk.Yks[0], mrk.Dfl,
 					)
 				}
 				
